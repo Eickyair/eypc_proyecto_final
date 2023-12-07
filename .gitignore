@@ -1,3 +1,6 @@
 *.exe
 *.ovl
 *.conf
+main.*
+!main.asm
+tdconfig.td
