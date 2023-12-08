@@ -13,7 +13,12 @@ ImprimirCadenaMacro macro variable
   int 21h
   popa
 endm
-
+AdaptarCadenaMacro macro espacios
+  pusha
+  push espacios
+  call adapatarCadena
+  popa
+endm
 ValorDelTiempoEnRegistros macro
   mov ah,2ch
   int 21h
@@ -40,17 +45,6 @@ EscribirMarcoMacro macro columna,renglon,anchoMarco,altoMarco
   push anchoMarco
   push altoMarco
   call escribirMarco
-  popa
-endm
-ImprimirTextoMacro macro col, ren, numero
-  pusha
-  UbicaCursorMacro col, ren
-  mov ah, 09h
-  lea dx,mensaje
-  int 21h
-  mov ah, 02h
-  mov dl, numero + 48
-  int 21h
   popa
 endm
 ImprimirRelogMacro macro
@@ -83,51 +77,64 @@ rojoAtributo dw 64; 0|100|0000
 verdeAtributo dw 39; 0|010|0111
 blancoAtributo dw 7; 0|000|0111
 ;------------------------------------
-; Variables para hacer logs
+; Variables para hacer logs - Solo para pruebas
 mensaje db 'AQUI TOY ','$'
 ; Variables Relog
 cadenaTiempo db 'HH:MM:SS:CS','$'
 diez db 10
 ;------------------------------------
 ; Variables de Animacion
-retardo dw 10
+paso dw 3
+maximoEspaciado dw 11
+caracterRelleno db ' '
+caracterDosPuntos db ':'
+cadenaAdaptada db 80 dup('#'),'$'
+debeAnimar db 1
 ;------------------------------------
 ; Constantes
 logitudTiempoNumeros equ 4 
 plantillaParaHacerCast equ 3030h
-
+maximaLongitudCadenaAdaptadaTiempo equ 80 
 
 .code
 main proc
   mov ax,@data
   mov ds,ax
-  RetardoMacro retardo
   jmp noAnimacion
-  animacion:
+  saltarAnimacion:
+    call generarAnimacion
+  relogDesplegado:
+    xor ax,ax
+    mov ax,maximoEspaciado
+    push ax
+    call adapatarCadena
+    UbicaCursorMacro 2,12
+    ImprimirCadenaMacro cadenaAdaptada
+    ; Caracter s
     in al,60h
     cmp al,1fh
     je noAnimacion
+    ;-------------------
+    ; ESC
     in al,60h
     cmp al,1
     je terminar2
-    jmp seguirAnimacion
+    ;-------------------
+    jmp relogDesplegado
     terminar2:
       call clrscr
       mov ah,4ch
       mov al,00h
       int 21h
-    seguirAnimacion:
-      ImprimirTextoMacro 3,3,1
-      ;Logica de la animacion
-  jmp animacion
   noAnimacion:
     call clrscr
     EscribirMarcoMacro columna, renglon, anchoMarco, altoMarco
   estadoMarco:
     ImprimirRelogMacro
+    ; Caracter A
     in al,60h
     cmp al,1Eh
-    je animacion
+    je saltarAnimacion
     ;-------------------
     in al,60h
     cmp al,30h
@@ -220,6 +227,7 @@ escribeCaracter proc
   ret 6
 escribeCaracter endp
 ; Procedimiento que genera un retardo fácil.
+; El retardo se genera con dos ciclos anidados.
 ; Entradas: El valor del contador externo en [bp+2].
 ; Salidas: Ninguna.
 generarRetardoFacil proc
@@ -349,6 +357,87 @@ clrscr proc
   ret
 clrscr endp
 
+adapatarCadena proc
+  mov bp,sp
+  call obtenerTiempo
+  mov bx,[bp+2];cantidad de espacios
+  mov si,offset cadenaTiempo
+  mov di,offset cadenaAdaptada
+  push di
+  mov cx,maximaLongitudCadenaAdaptadaTiempo
+  mov al,caracterRelleno
+  limpiarCadena:
+    mov [di],al
+    inc di
+  loop limpiarCadena
+  pop di
+  mov cx,3
+  insertarEspacios:
+    ;Escribir numeros
+    push bx
+    mov al,[si]
+    mov [di],al
+    inc si
+    inc di
+    mov al,[si]
+    mov [di],al
+    add si,2
+    inc di
+    cmp bx,0
+    je noHayEspacios
+    ;Escribir espacios
+    push bx
+    mov al,caracterRelleno
+    escribirEspacios:
+      mov [di],al
+      inc di
+      dec bx
+    jnz escribirEspacios
+    ;Escribir dos puntos
+    mov al,caracterDosPuntos
+    mov [di],al
+    inc di
+    ;-------------------
+    pop bx
+    mov al,caracterRelleno
+    escribirEspacios2:
+      mov [di],al
+      inc di
+      dec bx
+    jnz escribirEspacios2
+    jmp continuarCiclo
+    noHayEspacios:
+    mov al,caracterDosPuntos
+    mov [di],al
+    inc di
+    continuarCiclo:
+    pop bx
+  loop insertarEspacios
+  mov al,[si]
+    mov [di],al
+    inc si
+    inc di
+    mov al,[si]
+    mov [di],al
 
+  ret 2
+adapatarCadena endp
+
+generarAnimacion proc
+  mov cx,maximoEspaciado
+  mov bx,0
+  fotograma:
+    cmp cx,1
+    je ultimoFotograma
+      call clrscr
+    ultimoFotograma:
+    UbicaCursorMacro 2,12
+    AdaptarCadenaMacro bx
+    ImprimirCadenaMacro cadenaAdaptada
+    inc bx
+    RetardoMacro paso
+  loop fotograma
+  ret
+generarAnimacion endp
 
 end main
