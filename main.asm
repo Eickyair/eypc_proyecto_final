@@ -129,10 +129,10 @@ endm
 estadoActualAtributo dw 7; 0|000|0111
 ;------------------------------------
 ; Variables de Marco
-columna dw 3
-renglon dw 3
-anchoMarco dw 72
-altoMarco dw 11
+columna dw 4
+renglon dw 4
+anchoMarco dw 61
+altoMarco dw 20
 esquinaSuperiorIzquierdaAscii dw 201
 cantidadCaracteres dw 1
 lineaAscii dw 205
