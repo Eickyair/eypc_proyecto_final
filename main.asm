@@ -242,14 +242,12 @@ main proc
       mov ax,verdeAtributo
       cmp estadoActualAtributo, ax
       je estadoMarco
-      ; ImprimirTextoMacro 3,3,2
       mov estadoActualAtributo, ax
       jmp resolverEstado
     colorMarcoRojo:
       mov ax,rojoAtributo
       cmp estadoActualAtributo, ax
       je estadoMarco  
-      ; ImprimirTextoMacro 3,3,3
       mov estadoActualAtributo, ax
       jmp resolverEstado
     colorMarcoBlanco:
