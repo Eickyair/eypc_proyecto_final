@@ -1,11 +1,33 @@
 title Proyecto Final de EyPC
+; La directiva `.286` en el código de ensamblador indica al 
+; ensamblador que sólo se deben utilizar las instrucciones y
+; los registros que están disponibles en el procesador Intel 80286
+; y sus versiones anteriores. Esto significa que no se pueden
+; utilizar las características específicas de los procesadores más recientes.
+; Esta directiva es útil cuando se escribe código que debe
+; ser compatible con una gama específica de procesadores.
 .286
+; Macro para generar un retardo
+; Entrada: tiempo - el tiempo de retardo
+; Salida: ninguna
 RetardoMacro macro tiempo
   pusha
   push tiempo
   call generarRetardoFacil
   popa
 endm
+; ImprimirCadenaMacro macro
+; Macro que imprime una cadena de caracteres en la consola.
+; 
+; Entradas:
+;   - variable: dirección de memoria de la cadena a imprimir.
+; 
+; Salidas:
+;   - Ninguna.
+; 
+; Efectos secundarios:
+;   - Modifica los registros DX y AH.
+;
 ImprimirCadenaMacro macro variable
   pusha
   mov dx,offset variable
@@ -13,16 +35,29 @@ ImprimirCadenaMacro macro variable
   int 21h
   popa
 endm
+; AdaptarCadenaMacro macro espacios
+;   Descripción: Macro que adapta la cadena 
+;   de relog para insertar espacios.
+;   Entradas:
+;     - espacios: cantidad de espacios que se desean insertar
+;   Salidas: Ninguna.
+;   Efectos secundarios: Modifica la variable global cadenaAdaptada.
 AdaptarCadenaMacro macro espacios
   pusha
   push espacios
   call adapatarCadena
   popa
 endm
+; Macro que obtiene el valor del tiempo en los registros
+; Entradas: Ninguna
+; Salidas: El valor del tiempo en los registros dx y dx
 ValorDelTiempoEnRegistros macro
   mov ah,2ch
   int 21h
 endm
+; Macro para establecer la posición del cursor en la pantalla
+; Entrada: columna - número de columna (0-79)
+;          renglon - número de fila (0-24)
 UbicaCursorMacro macro columna,renglon
   pusha
   push columna
@@ -30,7 +65,14 @@ UbicaCursorMacro macro columna,renglon
   call ubicaCursor
   popa
 endm
-EscribeCaracterMacro macro caracter, atributo,cantidadCaracteres
+; Macro que escribe un caracter en la pantalla con un atributo y una cantidad de caracteres especificada.
+; 
+; Parámetros:
+; - caracter: El caracter a escribir en la pantalla.
+; - atributo: El atributo del caracter a escribir.
+; - cantidadCaracteres: La cantidad de caracteres a escribir.
+; NOTA: EL CURSOR YA DEBE ESTAR POSICIONADO.
+EscribeCaracterMacro macro caracter, atributo, cantidadCaracteres
   pusha
   push cantidadCaracteres
   push atributo
@@ -38,6 +80,12 @@ EscribeCaracterMacro macro caracter, atributo,cantidadCaracteres
   call escribeCaracter
   popa
 endm
+; Macro para escribir un marco en la pantalla
+; Parámetros:
+;   - columna: posición de la columna donde se iniciará el marco
+;   - renglon: posición del renglón donde se iniciará el marco
+;   - anchoMarco: ancho del marco
+;   - altoMarco: alto del marco
 EscribirMarcoMacro macro columna,renglon,anchoMarco,altoMarco
   pusha
   push columna
@@ -47,6 +95,8 @@ EscribirMarcoMacro macro columna,renglon,anchoMarco,altoMarco
   call escribirMarco
   popa
 endm
+; Macro para imprimir el reloj
+; Esta macro guarda los registros en la pila, llama a la función imprimirRelog y luego los restaura.
 ImprimirRelogMacro macro
   pusha
   call imprimirRelog
@@ -130,8 +180,7 @@ main proc
     call clrscr
     EscribirMarcoMacro columna, renglon, anchoMarco, altoMarco
   estadoMarco:
-    ImprimirRelogMacro
-    ; Caracter A
+    ImprimirRelogMacro;Imprime y acutaliza el relog
     in al,60h
     cmp al,1Eh
     je saltarAnimacion
@@ -226,10 +275,11 @@ escribeCaracter proc
   int 10h
   ret 6
 escribeCaracter endp
-; Procedimiento que genera un retardo fácil.
-; El retardo se genera con dos ciclos anidados.
-; Entradas: El valor del contador externo en [bp+2].
-; Salidas: Ninguna.
+
+; Procedimiento: generarRetardoFacil
+; Descripción: Genera un retardo utilizando dos ciclos anidados.
+; Parámetros:
+;   - [bp+2]: Contador externo (cx)
 generarRetardoFacil proc
   mov bp, sp
   mov cx, [bp+2] ; contador externo
@@ -302,6 +352,10 @@ escribirMarco proc
   ret 8
 escribirMarco endp
 
+; Procedimiento obtenerTiempo
+; Descripción: Este procedimiento obtiene el tiempo en formato de cadena de caracteres y lo guarda en la variable cadenaTiempo.
+; Parámetros: Ninguno
+; Retorno: Ninguno
 obtenerTiempo proc
   ValorDelTiempoEnRegistros
   mov di,offset cadenaTiempo
@@ -326,7 +380,10 @@ obtenerTiempo proc
   xor ax,plantillaParaHacerCast
   mov [di+9],ax
   ret 
-obtenerTiempo endp 
+obtenerTiempo endp
+; Procedimiento para imprimir el reloj en pantalla
+; Entradas: Ninguna
+; Salidas: Ninguna
 imprimirRelog proc
   mov dl,2
   xor ax,ax
@@ -357,6 +414,15 @@ clrscr proc
   ret
 clrscr endp
 
+; Procedimiento: adapatarCadena
+; Descripción: Este procedimiento se encarga de adaptar una la cadena del relog,
+; insertando espacios y caracteres de relleno según los parámetros especificados.
+; Parámetros:
+;   - [bp+2]: Cantidad de espacios que se desean insertar.
+; Retorno:
+;   - Ninguno
+; Efectos secundarios:
+;   - Modifica la variable global cadenaAdaptada.
 adapatarCadena proc
   mov bp,sp
   call obtenerTiempo
@@ -419,10 +485,17 @@ adapatarCadena proc
     inc di
     mov al,[si]
     mov [di],al
-
   ret 2
 adapatarCadena endp
 
+; Genera una animación en la pantalla para la expansioón de la cadena del relog.
+; El número máximo de espaciado entre fotogramas se encuentra en la variable maximoEspaciado.
+; La variable bx se utiliza como contador para los fotogramas espacios a insertar.
+; La macro UbicaCursorMacro se encarga de posicionar el cursor en la pantalla.
+; La macro AdaptarCadenaMacro adapta la cadena en función del valor de bx.
+; La macro ImprimirCadenaMacro imprime la cadena adaptada en la pantalla.
+; La macro RetardoMacro introduce un retardo entre fotogramas.
+; El ultimo fotograma no se limpia de la pantalla.
 generarAnimacion proc
   mov cx,maximoEspaciado
   mov bx,0
@@ -439,5 +512,4 @@ generarAnimacion proc
   loop fotograma
   ret
 generarAnimacion endp
-
 end main
