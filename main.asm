@@ -165,7 +165,13 @@ debeAnimar db 1
 logitudTiempoNumeros equ 4 
 plantillaParaHacerCast equ 3030h
 maximaLongitudCadenaAdaptadaTiempo equ 80 
-
+S equ 1fh
+A equ 1eh
+B equ 30h
+O equ 18h
+V equ 2fh
+R equ 13h
+ESC equ 1
 .code
 main proc
   mov ax,@data
@@ -182,12 +188,12 @@ main proc
     ImprimirCadenaMacro cadenaAdaptada
     ; Caracter s
     in al,60h
-    cmp al,1fh
+    cmp al,S
     je noAnimacion
     ;-------------------
     ; ESC
     in al,60h
-    cmp al,1
+    cmp al,ESC
     je terminar2
     ;-------------------
     jmp relogDesplegado
@@ -202,27 +208,27 @@ main proc
   estadoMarco:
     ImprimirRelogMacro;Imprime y acutaliza el relog
     in al,60h
-    cmp al,1Eh
+    cmp al,A
     je saltarAnimacion
     ;-------------------
     in al,60h
-    cmp al,30h
+    cmp al,B
     je colorMarcoAzul
     ;-------------------
     in al,60h
-    cmp al,2fh
+    cmp al,V
     je colorMarcoVerde
     ;-------------------
     in al,60h
-    cmp al,13h
+    cmp al,R
     je colorMarcoRojo
     ;-------------------
     in al,60h
-    cmp al,18h
+    cmp al,O
     je colorMarcoBlanco
     ;-------------------
     in al,60h
-    cmp al,1
+    cmp al,ESC
     je terminarPrograma
     jmp estadoMarco
     colorMarcoAzul:
