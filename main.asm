@@ -1,3 +1,23 @@
+;╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
+;║ Autor: Aguilar Martinez Erick Yair                                                                ║
+;║ Fecha: 2023-12-07                                                                                 ║
+;║ Descripción: Proyecto final de la materia Estructura y Programación de Computadoras.              ║
+;║ Versión del compilador/ensamblador:                                                               ║
+;║ 	Turbo Assembler Version 4.1 Copyright (c) 1988, 1996 Borland International                       ║
+;║ Modificaciones subsecuentes:                                                                      ║
+;║ 	{-<fecha>:<descripccion>}                                                                        ║
+;║ 	-2023-12-07:creacion                                                                             ║
+;║                                                                                                   ║
+;║ Comandos para ensamblado y enlazado:                                                              ║
+;║   OPCINON 1: Ensamblado y enlazado paso a paso                                                    ║
+;║   Ensamblado: tasm <ruta_archivo>/main.asm                                                        ║
+;║   Enlazado: tlink <ruta_archivo>/main.obj                                                         ║
+;║   Depuracion: td <ruta_archivo>/main.exe                                                          ║
+;║   Ejecucion: <ruta_archivo>/main.exe                                                              ║
+;║   OPCION 2: Uso de .bat                                                                           ║
+;║   Ejecutar el archivo run.bat                                                                     ║
+;║                                                                                                   ║
+;╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
 title Proyecto Final de EyPC
 ; La directiva `.286` en el código de ensamblador indica al 
 ; ensamblador que sólo se deben utilizar las instrucciones y
